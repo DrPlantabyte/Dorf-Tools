@@ -78,8 +78,15 @@ def check_for_conflicts(binding_key_map):
 			for b2 in binding_key_map:
 				if b2 in tested_list:
 					continue
+				# special case: STANDARDSCROLL and CURSOR
+				b1_name = b1.split(b':')[1]
+				b2_name = b2.split(b':')[1]
+				if b1_name.replace(b'STANDARDSCROLL',b'CURSOR') == b2_name.replace(b'STANDARDSCROLL',b'CURSOR'):
+					# intended conflict
+					continue
 				for k2 in binding_key_map[b2]:
 					if are_equivalent(k1, k2):
+						
 						conflicts.append( (b1, k1, b2, k2) )
 	return set(conflicts)
 _UPPER=[b'~', b'!', b'@', b'#', b'$', b'%', b'^', b'&', b'*', b'(', b')', b'_', b'+', b'Q', b'W', b'E', b'R', b'T', b'Y', b'U', b'I', b'O', b'P', b'{', b'}', b'|', b'A', b'S', b'D', b'F', b'G', b'H', b'J', b'K', b'L', b':', b'"', b'Z', b'X', b'C', b'V', b'B', b'N', b'M', b'<', b'>', b'?']
