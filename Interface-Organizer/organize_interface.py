@@ -11,14 +11,29 @@ def main():
 	parser = argparse.ArgumentParser()
 	#
 	parser.add_argument('interface_file', help='path to interface.txt (usually in DF/data/init/)')
+	parser.add_argument('-c', '--check-conflicts', action="store_true", help='check for conflicting key bindings')
+	parser.add_argument('-q', '--quiet', action="store_true", help='do not print organized key bindings to the terminal')
+	parser.add_argument('-r', '--replace', action="store_true", help='replace existing interface.txt contents with sorted contents')
+	parser.add_argument('-o', '--output', help='write sorted interface key bindings to file', default=None)
 	#
 	args=parser.parse_args()
 	run(args)
 def run(args):
 	interface_file = args.interface_file
-	print('Organizing keybindings in %s...' % path.abspath(interface_file))
-	parse_interface(interface_file)
-	print('...Done!')
+	#print('Organizing keybindings in %s...' % path.abspath(interface_file))
+	menu_map, menus = parse_interface(interface_file)
+	organized_content = organize_keybindings(menu_map, priority=[b'GENERAL', b'FORTRESS_HOTKEYS', b'DESIGNATE', b'BUILD_HOTKEY', b'BUILD_HOTKEY_CONSTRUCTION'])
+	if not args.quiet:
+		print(organized_content.decode('ascii', errors='ignore'))
+	if args.check_conflicts:
+		conflict_check(menu_map, menus)
+	if args.output != None:
+		with open(args.output, 'wb') as fout:
+			fout.write(organized_content)
+	if args.replace:
+		with open(args.interface_file, 'wb') as fout:
+			fout.write(organized_content)
+	#print('...Done!')
 	pass
 def parse_interface(filepath):
 	token_list = []
@@ -45,6 +60,9 @@ def parse_interface(filepath):
 	#
 	menus = set(menu_mapping.LUT.values())
 	
+	return menu_map, menus
+
+def conflict_check(menu_map, menus):
 	for menu_name in menus:
 		#key_tokens = []
 		#for bind_token in menu_map[menu_name]:
@@ -58,7 +76,31 @@ def parse_interface(filepath):
 				menu_name ) )
 			for c in conflicts:
 				print('\t[%s][%s] conflicts with [%s][%s]'%c)
-			
+def organize_keybindings(menu_map, priority=[b'GENERAL']):
+	output = b''
+	for menu in priority:
+		output += b'\r\n# '+menu+b'\r\n'
+		bindings = menu_map[menu]
+		sorted_bindings = list(bindings)
+		sorted_bindings.sort()
+		for bind_token in sorted_bindings:
+			output += b'['+bind_token+b']\r\n'
+			for key_token in bindings[bind_token]:
+				output += b'\t['+key_token+b']\r\n'
+	sorted_menus = list(menu_map)
+	sorted_menus.sort()
+	for menu in sorted_menus:
+		if menu in priority:
+			continue # skip
+		output += b'\r\n# '+menu+b'\r\n'
+		bindings = menu_map[menu]
+		sorted_bindings = list(bindings)
+		sorted_bindings.sort()
+		for bind_token in sorted_bindings:
+			output += b'['+bind_token+b']\r\n'
+			for key_token in bindings[bind_token]:
+				output += b'\t['+key_token+b']\r\n'
+	return output
 def get_menu_for(bind_token):
 	token_type, token_name, token_repeat = bind_token.split(b':')
 	if token_name in menu_mapping.LUT:
