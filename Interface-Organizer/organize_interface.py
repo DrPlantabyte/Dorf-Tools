@@ -29,9 +29,11 @@ def run(args):
 		conflict_check(menu_map, menus)
 	if args.output != None:
 		with open(args.output, 'wb') as fout:
+			fout.write(bytes([0xEF,0xBB,0xBF])) # BOM expected
 			fout.write(organized_content)
 	if args.replace:
 		with open(args.interface_file, 'wb') as fout:
+			fout.write(bytes([0xEF,0xBB,0xBF])) # BOM expected
 			fout.write(organized_content)
 	#print('...Done!')
 	pass
@@ -86,7 +88,7 @@ def organize_keybindings(menu_map, priority=[b'GENERAL']):
 		for bind_token in sorted_bindings:
 			output += b'['+bind_token+b']\r\n'
 			for key_token in bindings[bind_token]:
-				output += b'\t['+key_token+b']\r\n'
+				output += b'['+key_token+b']\r\n'
 	sorted_menus = list(menu_map)
 	sorted_menus.sort()
 	for menu in sorted_menus:
@@ -99,7 +101,7 @@ def organize_keybindings(menu_map, priority=[b'GENERAL']):
 		for bind_token in sorted_bindings:
 			output += b'['+bind_token+b']\r\n'
 			for key_token in bindings[bind_token]:
-				output += b'\t['+key_token+b']\r\n'
+				output += b'['+key_token+b']\r\n'
 	return output
 def get_menu_for(bind_token):
 	token_type, token_name, token_repeat = bind_token.split(b':')
