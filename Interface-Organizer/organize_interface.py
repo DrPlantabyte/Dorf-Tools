@@ -125,7 +125,18 @@ def check_for_conflicts(binding_key_map):
 				# special case: STANDARDSCROLL and CURSOR
 				b1_name = b1.split(b':')[1]
 				b2_name = b2.split(b':')[1]
-				if b1_name.replace(b'STANDARDSCROLL',b'CURSOR') == b2_name.replace(b'STANDARDSCROLL',b'CURSOR'):
+				if b'STANDARDSCROLL' in b1_name and b'CURSOR' in b2_name \
+						or b'STANDARDSCROLL' in b2_name and b'CURSOR' in b1_name:
+					# intended conflict
+					continue
+				# special case LEAVESCREEN and OPTIONS
+				if b'LEAVESCREEN' == b1_name and b'OPTIONS' == b2_name \
+						or b'LEAVESCREEN' == b2_name and b'OPTIONS' == b1_name:
+					# intended conflict
+					continue
+				# special case SEC_SELECT and SELECT_ALL
+				if b'SEC_SELECT' == b1_name and b'SELECT_ALL' == b2_name \
+						or b'SEC_SELECT' == b2_name and b'SELECT_ALL' == b1_name:
 					# intended conflict
 					continue
 				for k2 in binding_key_map[b2]:
